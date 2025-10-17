@@ -31,19 +31,22 @@
         const canvasId = 'space_wars_canvas';
         const canvasBufferId = 'space_wars_canvas_bf';
         const shipRadius = 10;
-        const rotationSpeed = 0.2;
+        const ROTATION_SPEED = 0.03;
         const KEYS_PRESSED = {};
         const STAR_POSITION = { x: 150, y: 150 }
         const STAR_RADIUS = 30;
         const STAR_COLOR = '#F5A927';
         const TOP_SPEED = 10;
-        const MAX_ACCELERATION = 1;
-        const ACCELERATION_DELTA = 0.1;
+        const MAX_ACCELERATION = 2;
+        const ACCELERATION_DELTA = 0.02;
 
         let renderer;
         let buffer = document.createElement('canvas');
         let renderCtx;
         let bufferCtx;
+        let needle_audit={x:0,y:0,a:0};
+        let wedge_audit={x:0,y:0,a:0};
+
         //ships
         let needle = {
             position: { x: 10, y: 10 },
@@ -62,6 +65,15 @@
             color: '#2798F5'
         };
 
+        function init_audit(){
+            needle_audit.x = document.getElementById('needle_x');
+            needle_audit.y = document.getElementById('needle_y');
+            needle_audit.a = document.getElementById('needle_a');
+            wedge_audit.x = document.getElementById('wedge_x');
+            wedge_audit.y = document.getElementById('wedge_y');
+            wedge_audit.a = document.getElementById('wedge_a');
+        }
+
         function init_canvas() {
             renderer = document.getElementById(canvasId);
             buffer.width = renderer.width;
@@ -69,6 +81,7 @@
             bufferCtx = buffer.getContext("2d");
             renderCtx = renderer.getContext("2d");
             window.requestAnimationFrame(render);
+            init_audit();
         }
 
         function draw_star() {
@@ -98,7 +111,7 @@
         }
         function rotate_ship(ship) {
             if (ship.rotation_dir != 0) {
-                ship.rotation += ship.rotation_dir * rotationSpeed;
+                ship.rotation += ship.rotation_dir * ROTATION_SPEED;
             }
         }
 
@@ -131,13 +144,14 @@
             render_ships();
 
             renderCtx.drawImage(buffer, 0, 0);
+            set_audit();
 
             window.requestAnimationFrame(render);
         }
 
         function rotate(modifier) {
-            needle.rotation += modifier * rotationSpeed;
-            wedge.rotation += modifier * rotationSpeed;
+            needle.rotation += modifier * ROTATION_SPEED;
+            wedge.rotation += modifier * ROTATION_SPEED;
         }
 
         /**
@@ -173,6 +187,16 @@
                 return;
             }
         }
+
+        function set_audit(){
+            needle_audit.x.innerHTML = needle.position.x;
+            wedge_audit.x.innerHTML = wedge.position.x;
+            needle_audit.y.innerHTML = needle.position.y;
+            wedge_audit.y.innerHTML = wedge.position.y;
+            needle_audit.a.innerHTML = needle.acceleration;
+            wedge_audit.a.innerHTML = wedge.acceleration;
+        }
+
         function handle_pressed_keys() {
             Object.keys(KEYS_PRESSED).forEach(key => {
                 console.log(key);
@@ -210,6 +234,22 @@
     <!-- <canvas id="space_wars_canvas_bf" width="300" height="300"></canvas> -->
     <button onclick="init_canvas()">INICIAR</button>
     <div class="'container">
+        <div>
+            Needle:
+                <ul>
+                    <li>x:<span id="needle_x"></span></li>
+                    <li>y:<span id="needle_y"></span></li>
+                    <li>a:<span id="needle_a"></span></li>
+                </ul>
+            </div>
+        <div>
+            Wedge:
+                <ul>
+                    <li>x:<span id="wedge_x"></span></li>
+                    <li>y:<span id="wedge_y"></span></li>
+                    <li>a:<span id="wedge_a"></span></li>
+                </ul>
+            </div>
 
     </div>
     <script>
