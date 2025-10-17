@@ -1,0 +1,204 @@
+<html>
+
+<head>
+    <style>
+        * {
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        img,
+        picture,
+        video,
+        canvas,
+        svg {
+            display: block;
+            max-width: 100%;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            background-color: aliceblue;
+        }
+
+        canvas {
+            border: 2px solid gray;
+        }
+    </style>
+    <script>
+        //Control
+        const canvasId = 'space_wars_canvas';
+        const canvasBufferId = 'space_wars_canvas_bf';
+        const shipRadius = 10;
+        const rotationSpeed = 0.2;
+        const KEYS_PRESSED = {};
+        const STAR_POSITION = { x: 150, y: 150 }
+        const STAR_RADIUS = 30;
+        const STAR_COLOR = '#F5A927';
+
+        let renderer;
+        let buffer = document.createElement('canvas');
+        
+        let bufferCtx;
+        //ships
+        let needle = {
+            position: { x: 10, y: 10 },
+            torpedoes: 10,
+            rotation: 0,
+            rotation_dir: 0,
+            color: '#E427F5'
+        };
+        let wedge = {
+            position: { x: 100, y: 100 },
+            torpedoes: 10,
+            rotation: Math.PI,
+            rotation_dir: 0,
+            color: '#2798F5'
+        };
+
+        function init_canvas() {
+            renderer = document.getElementById(canvasId);
+            buffer.width = renderer.width;
+            buffer.height = renderer.height;
+            bufferCtx = buffer.getContext("2d");
+
+            window.requestAnimationFrame(render);
+        }
+
+        function draw_star() {
+            bufferCtx.save();
+            bufferCtx.fillStyle = STAR_COLOR;
+            bufferCtx.beginPath();
+            bufferCtx.arc(STAR_POSITION.x, STAR_POSITION.y, STAR_RADIUS, 0, Math.PI * 2);
+            bufferCtx.fill();
+            bufferCtx.restore();
+        }
+
+        function draw_ship(ship) {
+            bufferCtx.save();
+            bufferCtx.fillStyle = ship.color;
+            bufferCtx.translate(ship.position.x, ship.position.y);
+            bufferCtx.rotate(ship.rotation);
+            bufferCtx.beginPath();
+            bufferCtx.moveTo(0, -shipRadius);
+            bufferCtx.lineTo(0, shipRadius);
+            bufferCtx.lineTo(shipRadius, shipRadius);
+            bufferCtx.fill();
+            bufferCtx.lineTo(-shipRadius, shipRadius);
+            bufferCtx.fill();
+            bufferCtx.restore();
+        }
+        function rotate_ship(ship) {
+            if (ship.rotation_dir != 0) {
+                ship.rotation += ship.rotation_dir * rotationSpeed;
+            }
+        }
+
+        function move_ship(ship) {
+
+        }
+
+        function update_ship_position(ship) {
+            rotate_ship(ship);
+            move_ship(ship);
+        }
+
+        function render_ships() {
+            update_ship_position(needle);
+            update_ship_position(wedge);
+            draw_ship(needle);
+            draw_ship(wedge);
+        }
+
+        function render() {
+            bufferCtx.fillStyle = "rgb(255 255 255 / 30%)";
+            bufferCtx.fillRect(0, 0, buffer.width, buffer.height);
+            //bufferCtx.clearRect(0, 0, 300, 300);
+            handle_pressed_keys();
+            draw_star();
+            render_ships();
+
+            renderCtx.drawImage(buffer, 0, 0);
+
+            window.requestAnimationFrame(render);
+        }
+
+        function rotate(modifier) {
+            needle.rotation += modifier * rotationSpeed;
+            wedge.rotation += modifier * rotationSpeed;
+        }
+
+        /**
+         * Sets the ship acceleration with given magnitude.
+         * Acceleration starts slow and increases faster the longer the key is pressed
+         * Should go from 0 up to MAX_ACCELERATION. 
+        **/
+        function set_acceleration(ship, magnitude) {
+
+        }
+
+
+        function set_rotation(ship, direction) {
+            if (ship.rotation_dir == direction) {
+                return;
+            }
+            if (ship.rotation_dir == -direction) {
+                ship.rotation_dir = 0;
+            } else {
+                ship.rotation_dir = direction;
+            }
+        }
+
+        function unset_rotation(ship, direction) {
+            if (ship.rotation_dir == direction) {
+                ship.rotation_dir = 0;
+            } else if (ship.rotation_dir == -direction) {
+                return;
+            }
+        }
+        function handle_pressed_keys() {
+            Object.keys(KEYS_PRESSED).forEach(key => {
+                console.log(key);
+                switch (key) {
+                    case 'a': set_rotation(needle, -1); break;
+                    case 'd': set_rotation(needle, 1); break;
+                    case 'w': set_acceleration(needle, 0); break;
+                    case 'j': set_rotation(wedge, -1); break;
+                    case 'l': set_rotation(wedge, 1); break;
+                    case 'i': set_acceleration(wedge, 0); break;
+                }
+            });
+        }
+
+        function key_pressed(event) {
+            KEYS_PRESSED[event.key] = true;
+        }
+
+        function key_released(event) {
+            delete KEYS_PRESSED[event.key];
+            switch (event.key) {
+                case 'a': unset_rotation(needle, -1); break;
+                case 'd': unset_rotation(needle, 1); break;
+                case 'w': set_acceleration(needle, 0); break;
+                case 'j': unset_rotation(wedge, -1); break;
+                case 'l': unset_rotation(wedge, 1); break;
+                case 'i': set_acceleration(wedge, 0); break;
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <canvas id="space_wars_canvas" width="300" height="300"></canvas>
+    <!-- <canvas id="space_wars_canvas_bf" width="300" height="300"></canvas> -->
+    <button onclick="init_canvas()">INICIAR</button>
+
+    <script>
+        document.addEventListener('keydown', key_pressed);
+        document.addEventListener('keyup', key_released);
+        init_canvas()
+    </script>
+</body>
+
+</html>
