@@ -8,7 +8,7 @@
 <body>
     <canvas id="space_wars_canvas" width="800" height="400"></canvas>
     <!-- <canvas id="space_wars_canvas_bf" width="300" height="300"></canvas> -->
-    <button onclick="init_canvas()">INICIAR</button>
+    <button onclick="game_reset()">Restart</button>
     <div class="'container">
         <div>
             Needle:
@@ -16,6 +16,8 @@
                     <li>x:<span id="needle_x"></span></li>
                     <li>y:<span id="needle_y"></span></li>
                     <li>a:<span id="needle_a"></span></li>
+                    <li>Lives:<span id="needle_l">5</span></li>
+                    <li>Torpedoes:<span id="wedge_t">10</span></li>
                 </ul>
             </div>
         <div>
@@ -24,6 +26,8 @@
                     <li>x:<span id="wedge_x"></span></li>
                     <li>y:<span id="wedge_y"></span></li>
                     <li>a:<span id="wedge_a"></span></li>
+                    <li>Lives:<span id="wedge_l">5</span></li>
+                    <li>Torpedoes:<span id="wedge_t">10</span></li>
                 </ul>
             </div>
 

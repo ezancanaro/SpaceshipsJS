@@ -25,6 +25,8 @@ let needle = {
     rotation: 0,
     rotation_dir: 0,
     acceleration: 0,
+    exploded: false,
+    lives: 5,
     color: '#E427F5'
 };
 let wedge = {
@@ -33,8 +35,12 @@ let wedge = {
     rotation: Math.PI,
     rotation_dir: 0,
     acceleration: 0,
+    exploded: false,
+    lives: 5,
     color: '#2798F5'
 };
+
+const INITIAL_STATE = { needle_start: needle, wedge_start: wedge };
 
 function init_audit() {
     needle_audit.x = document.getElementById('needle_x');
@@ -64,19 +70,27 @@ function draw_star() {
     bufferCtx.restore();
 }
 
+function draw_explosion() {
+
+}
+
 function draw_ship(ship) {
     bufferCtx.save();
     bufferCtx.fillStyle = ship.color;
     bufferCtx.translate(ship.position.x, ship.position.y);
     bufferCtx.rotate(ship.rotation);
 
-    bufferCtx.beginPath();
-    bufferCtx.moveTo(shipRadius, 0);
-    bufferCtx.lineTo(-shipRadius, 0);
-    bufferCtx.lineTo(-shipRadius, shipRadius);
-    bufferCtx.fill();
-    bufferCtx.lineTo(-shipRadius, -shipRadius);
-    bufferCtx.fill();
+    if (ship.exploded) {
+        draw_explosion();
+    } else {
+        bufferCtx.beginPath();
+        bufferCtx.moveTo(shipRadius, 0);
+        bufferCtx.lineTo(-shipRadius, 0);
+        bufferCtx.lineTo(-shipRadius, shipRadius);
+        bufferCtx.fill();
+        bufferCtx.lineTo(-shipRadius, -shipRadius);
+        bufferCtx.fill();
+    }
 
     bufferCtx.restore();
 }
@@ -113,6 +127,14 @@ function render() {
     handle_pressed_keys();
     draw_star();
     render_ships();
+    handle_collisions(needle);
+    handle_collisions(wedge);
+
+    /**
+     * To-DO: Add code for respawning ship after explosion
+     * Should only happen after X frames of exploding.
+     * Add grace period to avoid spawn camping?
+    **/
 
     renderCtx.drawImage(buffer, 0, 0);
     set_audit();
@@ -123,6 +145,16 @@ function render() {
 function rotate(modifier) {
     needle.rotation += modifier * ROTATION_SPEED;
     wedge.rotation += modifier * ROTATION_SPEED;
+}
+
+/**
+ * Handles collisions between game objects.
+ * 1. Check for ships colliding with the boundary;
+ * 2. Check for ships colliding with themselves;
+ * 3. Check for ships colliding with the star;
+ */
+function handle_collisions(ship) {
+
 }
 
 /**
@@ -196,4 +228,11 @@ function key_released(event) {
         case 'l': unset_rotation(wedge, 1); break;
         case 'i': set_acceleration(wedge, 0); break;
     }
+}
+
+/**
+ * Resets the game to INITIAL_STATE
+ */
+function game_reset(){
+
 }
