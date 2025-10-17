@@ -36,10 +36,13 @@
         const STAR_POSITION = { x: 150, y: 150 }
         const STAR_RADIUS = 30;
         const STAR_COLOR = '#F5A927';
+        const TOP_SPEED = 10;
+        const MAX_ACCELERATION = 1;
+        const ACCELERATION_DELTA = 0.1;
 
         let renderer;
         let buffer = document.createElement('canvas');
-        
+        let renderCtx;
         let bufferCtx;
         //ships
         let needle = {
@@ -47,6 +50,7 @@
             torpedoes: 10,
             rotation: 0,
             rotation_dir: 0,
+            acceleration: 0,
             color: '#E427F5'
         };
         let wedge = {
@@ -54,6 +58,7 @@
             torpedoes: 10,
             rotation: Math.PI,
             rotation_dir: 0,
+            acceleration: 0,
             color: '#2798F5'
         };
 
@@ -62,7 +67,7 @@
             buffer.width = renderer.width;
             buffer.height = renderer.height;
             bufferCtx = buffer.getContext("2d");
-
+            renderCtx = renderer.getContext("2d");
             window.requestAnimationFrame(render);
         }
 
@@ -80,13 +85,15 @@
             bufferCtx.fillStyle = ship.color;
             bufferCtx.translate(ship.position.x, ship.position.y);
             bufferCtx.rotate(ship.rotation);
+            
             bufferCtx.beginPath();
-            bufferCtx.moveTo(0, -shipRadius);
-            bufferCtx.lineTo(0, shipRadius);
-            bufferCtx.lineTo(shipRadius, shipRadius);
-            bufferCtx.fill();
+            bufferCtx.moveTo(shipRadius, 0);
+            bufferCtx.lineTo(-shipRadius, 0);
             bufferCtx.lineTo(-shipRadius, shipRadius);
             bufferCtx.fill();
+            bufferCtx.lineTo(-shipRadius, -shipRadius);
+            bufferCtx.fill();
+
             bufferCtx.restore();
         }
         function rotate_ship(ship) {
@@ -96,7 +103,11 @@
         }
 
         function move_ship(ship) {
-
+            //STAR_GRAVITY_PULL
+            //SHIP_THRUSTERS
+            let direction_vec = { x: Math.cos(ship.rotation), y: Math.sin(ship.rotation) };
+            ship.position.x += direction_vec.x * ship.acceleration;
+            ship.position.y += direction_vec.y * ship.acceleration;
         }
 
         function update_ship_position(ship) {
@@ -135,7 +146,12 @@
          * Should go from 0 up to MAX_ACCELERATION. 
         **/
         function set_acceleration(ship, magnitude) {
-
+            ship.acceleration += magnitude * ACCELERATION_DELTA;
+            if (ship.acceleration > MAX_ACCELERATION) {
+                ship.acceleration = MAX_ACCELERATION;
+            } else if (ship.acceleration < 0) {
+                ship.acceleration = 0;
+            }
         }
 
 
@@ -163,10 +179,10 @@
                 switch (key) {
                     case 'a': set_rotation(needle, -1); break;
                     case 'd': set_rotation(needle, 1); break;
-                    case 'w': set_acceleration(needle, 0); break;
+                    case 'w': set_acceleration(needle, 1); break;
                     case 'j': set_rotation(wedge, -1); break;
                     case 'l': set_rotation(wedge, 1); break;
-                    case 'i': set_acceleration(wedge, 0); break;
+                    case 'i': set_acceleration(wedge, 1); break;
                 }
             });
         }
@@ -193,7 +209,9 @@
     <canvas id="space_wars_canvas" width="300" height="300"></canvas>
     <!-- <canvas id="space_wars_canvas_bf" width="300" height="300"></canvas> -->
     <button onclick="init_canvas()">INICIAR</button>
+    <div class="'container">
 
+    </div>
     <script>
         document.addEventListener('keydown', key_pressed);
         document.addEventListener('keyup', key_released);
