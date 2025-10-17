@@ -11,6 +11,8 @@ const TOP_SPEED = 10;
 const MAX_ACCELERATION = 2;
 const ACCELERATION_DELTA = 0.02;
 
+let game_ended = false;
+
 let renderer;
 let buffer = document.createElement('canvas');
 let renderCtx;
@@ -42,7 +44,7 @@ let wedge = {
 
 const INITIAL_STATE = { needle_start: needle, wedge_start: wedge };
 
-function init_ships(){
+function init_ships() {
 
 }
 
@@ -61,10 +63,10 @@ function init_canvas() {
     buffer.height = renderer.height;
     bufferCtx = buffer.getContext("2d");
     renderCtx = renderer.getContext("2d");
-    window.requestAnimationFrame(render);
+    window.requestAnimationFrame(game_loop);
 }
 
-function init(){
+function init() {
     init_canvas();
     init_ships();
     init_audit();
@@ -120,7 +122,7 @@ function check_ship_boundary_collision(ship) {
     ]
     for (let line of ship_lines) {
         for (let bound of boundary_lines) {
-            if (check_lines_collision(line.point1, line.point2, bound.point1, bound.point2)){
+            if (check_lines_collision(line.point1, line.point2, bound.point1, bound.point2)) {
                 return true;
             }
         }
@@ -185,27 +187,6 @@ function render_ships() {
     draw_ship(wedge);
 }
 
-function render() {
-    bufferCtx.fillStyle = "rgb(255 255 255 / 30%)";
-    bufferCtx.fillRect(0, 0, buffer.width, buffer.height);
-    //bufferCtx.clearRect(0, 0, 300, 300);
-    handle_pressed_keys();
-    draw_star();
-    render_ships();
-    handle_collisions(needle);
-    handle_collisions(wedge);
-
-    /**
-     * To-DO: Add code for respawning ship after explosion
-     * Should only happen after X frames of exploding.
-     * Add grace period to avoid spawn camping?
-    **/
-
-    renderCtx.drawImage(buffer, 0, 0);
-    set_audit();
-
-    window.requestAnimationFrame(render);
-}
 
 function rotate(modifier) {
     needle.rotation += modifier * ROTATION_SPEED;
@@ -219,7 +200,7 @@ function rotate(modifier) {
  * 2. Check for ships colliding with the star;
  */
 function handle_object_collisions(ship) {
-    if(check_ship_boundary_collision(ship)){
+    if (check_ship_boundary_collision(ship)) {
         console.log("SHIP IS TOUCHING BOUNDS!");
         return true;
     }
@@ -229,7 +210,7 @@ function handle_object_collisions(ship) {
 /**
  * Check if ships collide with each other
  */
-function handle_ships_collision(){
+function handle_ships_collision() {
 
 }
 
@@ -312,4 +293,40 @@ function key_released(event) {
  */
 function game_reset() {
 
+}
+
+function render_game() {
+    bufferCtx.fillStyle = "rgb(255 255 255 / 30%)";
+    bufferCtx.fillRect(0, 0, buffer.width, buffer.height);
+    //bufferCtx.clearRect(0, 0, 300, 300);
+    handle_pressed_keys();
+    draw_star();
+    render_ships();
+    if (handle_object_collisions(needle)) {
+        game_ended = true;
+    };
+    handle_object_collisions(wedge);
+
+    /**
+     * To-DO: Add code for respawning ship after explosion
+     * Should only happen after X frames of exploding.
+     * Add grace period to avoid spawn camping?
+    **/
+
+    renderCtx.drawImage(buffer, 0, 0);
+    set_audit();
+}
+
+function game_loop() {
+    if (!game_ended) {
+        render_game();
+        window.requestAnimationFrame(game_loop);
+    } else {
+        bufferCtx.fillStyle = "rgb(255 255 255 / 30%)";
+        bufferCtx.fillRect(0, 0, buffer.width, buffer.height);
+        bufferCtx.fillStyle = "red";
+        bufferCtx.font = "64px serif";
+        bufferCtx.fillText("Game Ended!", renderer.width / 2, renderer.height / 2);
+        renderCtx.drawImage(buffer, 0, 0);
+    }
 }
